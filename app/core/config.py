@@ -7,8 +7,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     API_V1_STR: str = "/api/v1"
 
-    class Config:
-        env_file = ".env"
+    model_config = {"env_file": ".env"}
 
 
 @lru_cache()
