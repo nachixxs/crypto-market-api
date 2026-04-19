@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+test.db
+*.db
+
+# IDE
+.vscode/
+*.code-workspace
+
+# Alembic
+alembic/versions/*.py
