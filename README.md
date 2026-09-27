@@ -1,72 +1,38 @@
 # Crypto Market Intelligence API
 
-REST API for real-time cryptocurrency market data with AI-powered sentiment analysis.
+> Archived: learning project, no longer maintained.
 
-![Python](https://img.shields.io/badge/Python-3.14-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-latest-green)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue)
-![Tests](https://img.shields.io/badge/Tests-9%20passed-brightgreen)
-
-## Features
-
-- Real-time crypto prices from CoinGecko API
-- Price history persisted in PostgreSQL
-- AI sentiment analysis using DistilBERT (HuggingFace)
-- Async architecture with FastAPI + SQLAlchemy 2.0
-- Full test suite with pytest
+Async REST API that fetches current crypto prices from CoinGecko, stores each query in PostgreSQL, and runs a sentiment model over headlines. Built to practice FastAPI, async SQLAlchemy and Hugging Face Transformers.
 
 ## Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/` | Health check |
-| GET | `/api/v1/crypto/{symbol}/price` | Current price + save to DB |
-| GET | `/api/v1/crypto/{symbol}/history` | Price history from DB |
-| GET | `/api/v1/crypto/{symbol}/sentiment` | AI sentiment analysis |
+All routes are under `/api/v1`. Supported symbols: `bitcoin`, `ethereum`, `litecoin` (price and history also accept `btc`, `eth`, `ltc`).
 
-**Supported symbols:** `bitcoin`, `ethereum`, `litecoin` (also `btc`, `eth`, `ltc`)
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/` | Health check |
+| GET | `/crypto/{symbol}/price` | Fetches price, 24h change, market cap and volume from CoinGecko and saves a row |
+| GET | `/crypto/{symbol}/history?limit=50` | Returns the saved rows for that symbol |
+| GET | `/crypto/{symbol}/sentiment` | Runs `distilbert-base-uncased-finetuned-sst-2-english` over the headlines and returns the majority label and average score |
 
-## Tech Stack
+Limitation: the headlines are five hardcoded sample sentences per coin in `app/services/sentiment_service.py`, not a live news feed.
 
-- **FastAPI** — REST API framework
-- **PostgreSQL + SQLAlchemy 2.0** — async database
-- **HuggingFace Transformers** — DistilBERT sentiment model
-- **aiohttp** — async HTTP client for CoinGecko
-- **pytest + httpx** — async testing
+## Stack
 
-## Getting Started
+FastAPI, SQLAlchemy 2.0 (async, asyncpg), PostgreSQL, aiohttp, Hugging Face Transformers (PyTorch), pytest + httpx, Docker. Alembic is configured, but no migration files are committed; tables are created on startup.
+
+## Run locally
+
 ```bash
-# Clone and enter
-git clone https://github.com/nachixxs/crypto-market-api
-cd crypto-market-api
-
-# Create virtual environment
 python -m venv venv
-venv\Scripts\activate  # Windows
-
-# Install dependencies
+venv\Scripts\activate          # Windows; use source venv/bin/activate elsewhere
 pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your values
-
-# Run the API
-uvicorn app.main:app --reload
-
-# Run tests
-pytest
+cp .env.example .env           # set DATABASE_URL, SECRET_KEY, API_V1_STR
+uvicorn app.main:app --reload  # docs at http://localhost:8000/docs
 ```
 
-## Interactive Docs
+A `Dockerfile` is included. The first sentiment request downloads the model from Hugging Face.
 
-Once running, visit `http://localhost:8000/docs` for the Swagger UI.
+## Tests
 
-## Related Projects
-
-- [CryptoLens CLI](https://github.com/nachixxs/cryptolens-cli) — the CLI tool this API is built upon
-
-## Author
-
-**Ignacio Noguerol**
-[LinkedIn](https://linkedin.com/in/ignacio-noguerol-54aa942b0) · [GitHub](https://github.com/nachixxs)
+9 async tests in `tests/test_crypto.py`. They use a local SQLite database and mock both the CoinGecko call and the sentiment model, so no network or model download is needed. Run with `pytest`.
